@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="start:all" type="CompoundRunConfigurationType">
+    <toRun name="start:rest-api-gateway" type="js.build_tools.npm" />
+    <toRun name="start:user" type="js.build_tools.npm" />
+    <method v="2" />
+  </configuration>
+</component>
