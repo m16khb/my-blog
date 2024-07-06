@@ -2,8 +2,15 @@ syntax = 'proto3';
 
 package user;
 
+message User {
+  string id = 1;
+  string loginId = 2;
+  string name = 3;
+}
+
 service RpcUserService {
   rpc createUser (CreateUserRequest) returns (CreateUserResponse) {}
+  rpc findOneUser(FindOneUserRequest) returns (FindOneUserResponse) {}
 }
 
 message CreateUserRequest {
@@ -14,4 +21,12 @@ message CreateUserRequest {
 
 message CreateUserResponse {
   string id = 1;
+}
+
+message FindOneUserRequest {
+  string id = 1;
+}
+
+message FindOneUserResponse {
+  user.User user = 1;
 }

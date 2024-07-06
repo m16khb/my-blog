@@ -5,12 +5,18 @@
 // source: user.proto
 
 /* eslint-disable */
-import { Metadata } from "@grpc/grpc-js";
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
 import { messageTypeRegistry } from "./typeRegistry";
 
 export const protobufPackage = "user";
+
+export interface User {
+  $type: "user.User";
+  id?: string | undefined;
+  loginId?: string | undefined;
+  name?: string | undefined;
+}
 
 export interface CreateUserRequest {
   $type: "user.CreateUserRequest";
@@ -24,7 +30,38 @@ export interface CreateUserResponse {
   id?: string | undefined;
 }
 
+export interface FindOneUserRequest {
+  $type: "user.FindOneUserRequest";
+  id?: string | undefined;
+}
+
+export interface FindOneUserResponse {
+  $type: "user.FindOneUserResponse";
+  user?: User | undefined;
+}
+
 export const USER_PACKAGE_NAME = "user";
+
+function createBaseUser(): User {
+  return { $type: "user.User" };
+}
+
+export const User = {
+  $type: "user.User" as const,
+
+  create(base?: DeepPartial<User>): User {
+    return User.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<User>): User {
+    const message = Object.create(createBaseUser()) as User;
+    message.id = object.id ?? undefined;
+    message.loginId = object.loginId ?? undefined;
+    message.name = object.name ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(User.$type, User);
 
 function createBaseCreateUserRequest(): CreateUserRequest {
   return { $type: "user.CreateUserRequest" };
@@ -66,21 +103,65 @@ export const CreateUserResponse = {
 
 messageTypeRegistry.set(CreateUserResponse.$type, CreateUserResponse);
 
+function createBaseFindOneUserRequest(): FindOneUserRequest {
+  return { $type: "user.FindOneUserRequest" };
+}
+
+export const FindOneUserRequest = {
+  $type: "user.FindOneUserRequest" as const,
+
+  create(base?: DeepPartial<FindOneUserRequest>): FindOneUserRequest {
+    return FindOneUserRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<FindOneUserRequest>): FindOneUserRequest {
+    const message = Object.create(createBaseFindOneUserRequest()) as FindOneUserRequest;
+    message.id = object.id ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(FindOneUserRequest.$type, FindOneUserRequest);
+
+function createBaseFindOneUserResponse(): FindOneUserResponse {
+  return { $type: "user.FindOneUserResponse" };
+}
+
+export const FindOneUserResponse = {
+  $type: "user.FindOneUserResponse" as const,
+
+  create(base?: DeepPartial<FindOneUserResponse>): FindOneUserResponse {
+    return FindOneUserResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<FindOneUserResponse>): FindOneUserResponse {
+    const message = Object.create(createBaseFindOneUserResponse()) as FindOneUserResponse;
+    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(FindOneUserResponse.$type, FindOneUserResponse);
+
 export interface RpcUserServiceClient {
-  createUser(request: CreateUserRequest, metadata: Metadata, ...rest: any): Observable<CreateUserResponse>;
+  createUser(request: CreateUserRequest, ...rest: any): Observable<CreateUserResponse>;
+
+  findOneUser(request: FindOneUserRequest, ...rest: any): Observable<FindOneUserResponse>;
 }
 
 export interface RpcUserServiceController {
   createUser(
     request: CreateUserRequest,
-    metadata: Metadata,
     ...rest: any
   ): Promise<CreateUserResponse> | Observable<CreateUserResponse> | CreateUserResponse;
+
+  findOneUser(
+    request: FindOneUserRequest,
+    ...rest: any
+  ): Promise<FindOneUserResponse> | Observable<FindOneUserResponse> | FindOneUserResponse;
 }
 
 export function RpcUserServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createUser"];
+    const grpcMethods: string[] = ["createUser", "findOneUser"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("RpcUserService", method)(constructor.prototype[method], method, descriptor);

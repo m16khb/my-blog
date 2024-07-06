@@ -3,6 +3,8 @@ import { UserService } from './user.service';
 import {
   CreateUserRequest,
   CreateUserResponse,
+  FindOneUserRequest,
+  FindOneUserResponse,
   RpcUserServiceController,
   RpcUserServiceControllerMethods,
 } from '@proto/user.pb';
@@ -12,10 +14,15 @@ import {
 export class UserController implements RpcUserServiceController {
   constructor(private readonly userService: UserService) {}
 
-  createUser(
+  async createUser(
     createUserRequest: CreateUserRequest,
   ): Promise<CreateUserResponse> {
-    console.log(createUserRequest);
-    return undefined;
+    return this.userService.createUser(createUserRequest);
+  }
+
+  async findOneUser(
+    findOneUserRequest: FindOneUserRequest,
+  ): Promise<FindOneUserResponse> {
+    return this.userService.findOneUser(findOneUserRequest);
   }
 }
