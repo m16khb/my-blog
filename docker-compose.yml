@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  multi-db:
+    image: postgres
+    container_name: multi-db
+    restart: always
+    ports:
+      - ${DB_PORT}:5432  # 호스트의 DB_PORT를 컨테이너의 5432 포트에 매핑
+    environment:
+      POSTGRES_USER: ${DB_USER}  # 데이터베이스 사용자 이름
+      POSTGRES_PASSWORD: ${DB_PASSWORD}  # 데이터베이스 비밀번호
+      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME_USER}, ${DB_NAME_FILE}  # 생성할 데이터베이스 목록
+      TZ: UTC  # 타임존 설정
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data  # 데이터 지속성을 위한 볼륨 마운트
+      - ./init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh  # 초기화 스크립트 마운트
+      - ./logs/db:/var/log  # 로그 디렉토리를 호스트와 연결

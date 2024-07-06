@@ -8,6 +8,8 @@ import * as process from 'node:process';
 async function bootstrap() {
   const app = await NestFactory.create(UserModule);
 
+  // const configService: ConfigService = app.get<ConfigService>(ConfigService);
+
   const httpPort = process.env.HTTP_PORT || 3002;
   const grpcPort = process.env.GRPC_PORT || 30002;
   const protoPath: string = '../../../proto/';
