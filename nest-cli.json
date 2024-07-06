@@ -34,15 +34,6 @@
         "tsConfigPath": "apps/file/tsconfig.app.json"
       }
     },
-    "grpc": {
-      "type": "library",
-      "root": "libs/grpc",
-      "entryFile": "index",
-      "sourceRoot": "libs/grpc/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/grpc/tsconfig.lib.json"
-      }
-    },
     "auth": {
       "type": "application",
       "root": "apps/auth",
@@ -50,6 +41,33 @@
       "sourceRoot": "apps/auth/src",
       "compilerOptions": {
         "tsConfigPath": "apps/auth/tsconfig.app.json"
+      }
+    },
+    "filter": {
+      "type": "library",
+      "root": "libs/filter",
+      "entryFile": "index",
+      "sourceRoot": "libs/filter/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/filter/tsconfig.lib.json"
+      }
+    },
+    "crypto": {
+      "type": "library",
+      "root": "libs/crypto",
+      "entryFile": "index",
+      "sourceRoot": "libs/crypto/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/crypto/tsconfig.lib.json"
+      }
+    },
+    "util": {
+      "type": "library",
+      "root": "libs/util",
+      "entryFile": "index",
+      "sourceRoot": "libs/util/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/util/tsconfig.lib.json"
       }
     }
   }

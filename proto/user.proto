@@ -2,15 +2,27 @@ syntax = 'proto3';
 
 package user;
 
+import "google/protobuf/timestamp.proto";
+
 message User {
   string id = 1;
   string loginId = 2;
-  string name = 3;
+  string password = 3;
+  string name = 4;
+
+  google.protobuf.Timestamp createdAt = 5;
+  optional string createdBy = 6;
+  google.protobuf.Timestamp updatedAt = 7;
+  optional string updatedBy = 8;
+  google.protobuf.Timestamp deletedAt = 9;
+  optional string deletedBy = 10;
 }
 
 service RpcUserService {
   rpc createUser (CreateUserRequest) returns (CreateUserResponse) {}
   rpc findOneUser(FindOneUserRequest) returns (FindOneUserResponse) {}
+  rpc updateUser(UpdateUserRequest) returns (UpdateUserResponse) {}
+  rpc deleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
 }
 
 message CreateUserRequest {
@@ -29,4 +41,23 @@ message FindOneUserRequest {
 
 message FindOneUserResponse {
   user.User user = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string loginId = 2;
+  string password = 3;
+  string name = 4;
+}
+
+message UpdateUserResponse {
+  string id = 1;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message DeleteUserResponse {
+  string id = 1;
 }

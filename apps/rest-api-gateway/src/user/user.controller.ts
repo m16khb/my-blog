@@ -1,33 +1,43 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Inject,
   OnModuleInit,
   Param,
+  Patch,
   Post,
   ValidationPipe,
 } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
 import {
   CreateUserRequest,
+  DeleteUserRequest,
   FindOneUserRequest,
   RPC_USER_SERVICE_NAME,
   RpcUserServiceClient,
+  UpdateUserRequest,
 } from '@proto/user.pb';
 import { firstValueFrom } from 'rxjs';
+import { ClientGrpc } from '@nestjs/microservices';
+import { createProxy } from '@app/util';
 
 @Controller('users')
 export class UserController implements OnModuleInit {
-  private rpcUserService: RpcUserServiceClient;
+  private grpcStubUserService: RpcUserServiceClient;
 
   constructor(
-    @Inject(RPC_USER_SERVICE_NAME) private readonly rpcUserClient: ClientGrpc,
+    @Inject('GRPC_USER_CLIENT') private readonly rpcUserClient: ClientGrpc,
   ) {}
 
-  onModuleInit() {
-    this.rpcUserService =
-      this.rpcUserClient.getService<RpcUserServiceClient>('RpcUserService');
+  onModuleInit(): void {
+    this.grpcStubUserService = createProxy<RpcUserServiceClient>(
+      this.rpcUserClient.getService<RpcUserServiceClient>(
+        RPC_USER_SERVICE_NAME,
+      ),
+    );
   }
 
   @Post()
@@ -35,7 +45,7 @@ export class UserController implements OnModuleInit {
     const createUserRequest = CreateUserRequest.fromPartial(body);
 
     return await firstValueFrom(
-      this.rpcUserService.createUser(createUserRequest),
+      this.grpcStubUserService.createUser(createUserRequest),
     );
   }
 
@@ -44,9 +54,30 @@ export class UserController implements OnModuleInit {
     const findOneUserRequest = FindOneUserRequest.fromPartial({ id: userId });
 
     const { user } = await firstValueFrom(
-      this.rpcUserService.findOneUser(findOneUserRequest),
+      this.grpcStubUserService.findOneUser(findOneUserRequest),
     );
 
     return user;
+  }
+
+  @Patch(':userId')
+  async updateUser(
+    @Param('userId') userId: string,
+    @Body(new ValidationPipe()) body: any,
+  ) {
+    const updateUserRequest = UpdateUserRequest.fromPartial(body);
+    return await firstValueFrom(
+      this.grpcStubUserService.updateUser(updateUserRequest),
+    );
+  }
+
+  @Delete(':userId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteUser(@Param('userId') userId: string) {
+    const deleteUserRequest = DeleteUserRequest.fromPartial({ id: userId });
+
+    return await firstValueFrom(
+      this.grpcStubUserService.deleteUser(deleteUserRequest),
+    );
   }
 }

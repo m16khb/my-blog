@@ -6,6 +6,7 @@
 
 /* eslint-disable */
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
+import { wrappers } from "protobufjs";
 import { Observable } from "rxjs";
 import { messageTypeRegistry } from "./typeRegistry";
 
@@ -15,7 +16,14 @@ export interface User {
   $type: "user.User";
   id?: string | undefined;
   loginId?: string | undefined;
+  password?: string | undefined;
   name?: string | undefined;
+  createdAt?: Date | undefined;
+  createdBy?: string | undefined;
+  updatedAt?: Date | undefined;
+  updatedBy?: string | undefined;
+  deletedAt?: Date | undefined;
+  deletedBy?: string | undefined;
 }
 
 export interface CreateUserRequest {
@@ -40,7 +48,39 @@ export interface FindOneUserResponse {
   user?: User | undefined;
 }
 
+export interface UpdateUserRequest {
+  $type: "user.UpdateUserRequest";
+  id?: string | undefined;
+  loginId?: string | undefined;
+  password?: string | undefined;
+  name?: string | undefined;
+}
+
+export interface UpdateUserResponse {
+  $type: "user.UpdateUserResponse";
+  id?: string | undefined;
+}
+
+export interface DeleteUserRequest {
+  $type: "user.DeleteUserRequest";
+  id?: string | undefined;
+}
+
+export interface DeleteUserResponse {
+  $type: "user.DeleteUserResponse";
+  id?: string | undefined;
+}
+
 export const USER_PACKAGE_NAME = "user";
+
+wrappers[".google.protobuf.Timestamp"] = {
+  fromObject(value: Date) {
+    return { seconds: value.getTime() / 1000, nanos: (value.getTime() % 1000) * 1e6 };
+  },
+  toObject(message: { seconds: number; nanos: number }) {
+    return new Date(message.seconds * 1000 + message.nanos / 1e6);
+  },
+} as any;
 
 function createBaseUser(): User {
   return { $type: "user.User" };
@@ -56,7 +96,14 @@ export const User = {
     const message = Object.create(createBaseUser()) as User;
     message.id = object.id ?? undefined;
     message.loginId = object.loginId ?? undefined;
+    message.password = object.password ?? undefined;
     message.name = object.name ?? undefined;
+    message.createdAt = object.createdAt ?? undefined;
+    message.createdBy = object.createdBy ?? undefined;
+    message.updatedAt = object.updatedAt ?? undefined;
+    message.updatedBy = object.updatedBy ?? undefined;
+    message.deletedAt = object.deletedAt ?? undefined;
+    message.deletedBy = object.deletedBy ?? undefined;
     return message;
   },
 };
@@ -141,10 +188,93 @@ export const FindOneUserResponse = {
 
 messageTypeRegistry.set(FindOneUserResponse.$type, FindOneUserResponse);
 
+function createBaseUpdateUserRequest(): UpdateUserRequest {
+  return { $type: "user.UpdateUserRequest" };
+}
+
+export const UpdateUserRequest = {
+  $type: "user.UpdateUserRequest" as const,
+
+  create(base?: DeepPartial<UpdateUserRequest>): UpdateUserRequest {
+    return UpdateUserRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<UpdateUserRequest>): UpdateUserRequest {
+    const message = Object.create(createBaseUpdateUserRequest()) as UpdateUserRequest;
+    message.id = object.id ?? undefined;
+    message.loginId = object.loginId ?? undefined;
+    message.password = object.password ?? undefined;
+    message.name = object.name ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(UpdateUserRequest.$type, UpdateUserRequest);
+
+function createBaseUpdateUserResponse(): UpdateUserResponse {
+  return { $type: "user.UpdateUserResponse" };
+}
+
+export const UpdateUserResponse = {
+  $type: "user.UpdateUserResponse" as const,
+
+  create(base?: DeepPartial<UpdateUserResponse>): UpdateUserResponse {
+    return UpdateUserResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<UpdateUserResponse>): UpdateUserResponse {
+    const message = Object.create(createBaseUpdateUserResponse()) as UpdateUserResponse;
+    message.id = object.id ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(UpdateUserResponse.$type, UpdateUserResponse);
+
+function createBaseDeleteUserRequest(): DeleteUserRequest {
+  return { $type: "user.DeleteUserRequest" };
+}
+
+export const DeleteUserRequest = {
+  $type: "user.DeleteUserRequest" as const,
+
+  create(base?: DeepPartial<DeleteUserRequest>): DeleteUserRequest {
+    return DeleteUserRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<DeleteUserRequest>): DeleteUserRequest {
+    const message = Object.create(createBaseDeleteUserRequest()) as DeleteUserRequest;
+    message.id = object.id ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(DeleteUserRequest.$type, DeleteUserRequest);
+
+function createBaseDeleteUserResponse(): DeleteUserResponse {
+  return { $type: "user.DeleteUserResponse" };
+}
+
+export const DeleteUserResponse = {
+  $type: "user.DeleteUserResponse" as const,
+
+  create(base?: DeepPartial<DeleteUserResponse>): DeleteUserResponse {
+    return DeleteUserResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<DeleteUserResponse>): DeleteUserResponse {
+    const message = Object.create(createBaseDeleteUserResponse()) as DeleteUserResponse;
+    message.id = object.id ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(DeleteUserResponse.$type, DeleteUserResponse);
+
 export interface RpcUserServiceClient {
   createUser(request: CreateUserRequest, ...rest: any): Observable<CreateUserResponse>;
 
   findOneUser(request: FindOneUserRequest, ...rest: any): Observable<FindOneUserResponse>;
+
+  updateUser(request: UpdateUserRequest, ...rest: any): Observable<UpdateUserResponse>;
+
+  deleteUser(request: DeleteUserRequest, ...rest: any): Observable<DeleteUserResponse>;
 }
 
 export interface RpcUserServiceController {
@@ -157,11 +287,21 @@ export interface RpcUserServiceController {
     request: FindOneUserRequest,
     ...rest: any
   ): Promise<FindOneUserResponse> | Observable<FindOneUserResponse> | FindOneUserResponse;
+
+  updateUser(
+    request: UpdateUserRequest,
+    ...rest: any
+  ): Promise<UpdateUserResponse> | Observable<UpdateUserResponse> | UpdateUserResponse;
+
+  deleteUser(
+    request: DeleteUserRequest,
+    ...rest: any
+  ): Promise<DeleteUserResponse> | Observable<DeleteUserResponse> | DeleteUserResponse;
 }
 
 export function RpcUserServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createUser", "findOneUser"];
+    const grpcMethods: string[] = ["createUser", "findOneUser", "updateUser", "deleteUser"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("RpcUserService", method)(constructor.prototype[method], method, descriptor);

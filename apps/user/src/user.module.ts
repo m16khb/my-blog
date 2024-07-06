@@ -4,6 +4,7 @@ import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserEntity } from '../entity/user.entity';
+import { CryptoModule } from '@app/crypto';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { UserEntity } from '../entity/user.entity';
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forFeature([UserEntity]),
+    CryptoModule,
   ],
   controllers: [UserController],
   providers: [UserService],

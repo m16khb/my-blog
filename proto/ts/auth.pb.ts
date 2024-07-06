@@ -11,6 +11,27 @@ import { messageTypeRegistry } from "./typeRegistry";
 
 export const protobufPackage = "auth";
 
+export interface LoginRequest {
+  $type: "auth.LoginRequest";
+  loginId?: string | undefined;
+  password?: string | undefined;
+}
+
+export interface LoginResponse {
+  $type: "auth.LoginResponse";
+  token?: string | undefined;
+}
+
+export interface LogoutRequest {
+  $type: "auth.LogoutRequest";
+  token?: string | undefined;
+}
+
+export interface LogoutResponse {
+  $type: "auth.LogoutResponse";
+  success?: boolean | undefined;
+}
+
 export interface ValidateTokenRequest {
   $type: "auth.ValidateTokenRequest";
   token?: string | undefined;
@@ -22,6 +43,83 @@ export interface ValidateTokenResponse {
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
+
+function createBaseLoginRequest(): LoginRequest {
+  return { $type: "auth.LoginRequest" };
+}
+
+export const LoginRequest = {
+  $type: "auth.LoginRequest" as const,
+
+  create(base?: DeepPartial<LoginRequest>): LoginRequest {
+    return LoginRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LoginRequest>): LoginRequest {
+    const message = Object.create(createBaseLoginRequest()) as LoginRequest;
+    message.loginId = object.loginId ?? undefined;
+    message.password = object.password ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(LoginRequest.$type, LoginRequest);
+
+function createBaseLoginResponse(): LoginResponse {
+  return { $type: "auth.LoginResponse" };
+}
+
+export const LoginResponse = {
+  $type: "auth.LoginResponse" as const,
+
+  create(base?: DeepPartial<LoginResponse>): LoginResponse {
+    return LoginResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LoginResponse>): LoginResponse {
+    const message = Object.create(createBaseLoginResponse()) as LoginResponse;
+    message.token = object.token ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(LoginResponse.$type, LoginResponse);
+
+function createBaseLogoutRequest(): LogoutRequest {
+  return { $type: "auth.LogoutRequest" };
+}
+
+export const LogoutRequest = {
+  $type: "auth.LogoutRequest" as const,
+
+  create(base?: DeepPartial<LogoutRequest>): LogoutRequest {
+    return LogoutRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LogoutRequest>): LogoutRequest {
+    const message = Object.create(createBaseLogoutRequest()) as LogoutRequest;
+    message.token = object.token ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(LogoutRequest.$type, LogoutRequest);
+
+function createBaseLogoutResponse(): LogoutResponse {
+  return { $type: "auth.LogoutResponse" };
+}
+
+export const LogoutResponse = {
+  $type: "auth.LogoutResponse" as const,
+
+  create(base?: DeepPartial<LogoutResponse>): LogoutResponse {
+    return LogoutResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<LogoutResponse>): LogoutResponse {
+    const message = Object.create(createBaseLogoutResponse()) as LogoutResponse;
+    message.success = object.success ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(LogoutResponse.$type, LogoutResponse);
 
 function createBaseValidateTokenRequest(): ValidateTokenRequest {
   return { $type: "auth.ValidateTokenRequest" };
@@ -62,10 +160,18 @@ export const ValidateTokenResponse = {
 messageTypeRegistry.set(ValidateTokenResponse.$type, ValidateTokenResponse);
 
 export interface RpcAuthServiceClient {
+  logIn(request: LoginRequest, ...rest: any): Observable<LoginResponse>;
+
+  logOut(request: LogoutRequest, ...rest: any): Observable<LogoutResponse>;
+
   validateToken(request: ValidateTokenRequest, ...rest: any): Observable<ValidateTokenResponse>;
 }
 
 export interface RpcAuthServiceController {
+  logIn(request: LoginRequest, ...rest: any): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
+
+  logOut(request: LogoutRequest, ...rest: any): Promise<LogoutResponse> | Observable<LogoutResponse> | LogoutResponse;
+
   validateToken(
     request: ValidateTokenRequest,
     ...rest: any
@@ -74,7 +180,7 @@ export interface RpcAuthServiceController {
 
 export function RpcAuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["validateToken"];
+    const grpcMethods: string[] = ["logIn", "logOut", "validateToken"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("RpcAuthService", method)(constructor.prototype[method], method, descriptor);

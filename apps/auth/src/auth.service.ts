@@ -1,9 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { ValidateTokenRequest, ValidateTokenResponse } from '@proto/auth.pb';
+import {
+  LoginRequest,
+  LoginResponse,
+  LogoutRequest,
+  LogoutResponse,
+  ValidateTokenRequest,
+  ValidateTokenResponse,
+} from '@proto/auth.pb';
 
 @Injectable()
 export class AuthService {
   constructor() {}
+
+  async logIn(loginRequest: LoginRequest): Promise<LoginResponse> {
+    console.log(loginRequest, 'loginRequest');
+    return undefined;
+  }
+
+  async logOut(logoutRequest: LogoutRequest): Promise<LogoutResponse> {
+    console.log(logoutRequest, 'logoutRequest');
+    return undefined;
+  }
 
   async validateToken(
     validateTokenRequest: ValidateTokenRequest,

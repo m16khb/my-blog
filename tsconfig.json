@@ -25,11 +25,23 @@
       "@proto/*": [
         "proto/ts/*"
       ],
-      "@app/grpc": [
-        "libs/grpc/src"
+      "@app/filter": [
+        "libs/filter/src"
       ],
-      "@app/grpc/*": [
-        "libs/grpc/src/*"
+      "@app/filter/*": [
+        "libs/filter/src/*"
+      ],
+      "@app/crypto": [
+        "libs/crypto/src"
+      ],
+      "@app/crypto/*": [
+        "libs/crypto/src/*"
+      ],
+      "@app/util": [
+        "libs/util/src"
+      ],
+      "@app/util/*": [
+        "libs/util/src/*"
       ]
     }
   }
