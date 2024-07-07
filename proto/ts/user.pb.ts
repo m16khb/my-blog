@@ -48,6 +48,16 @@ export interface FindOneUserResponse {
   user?: User | undefined;
 }
 
+export interface FindOneUserByLoginIdRequest {
+  $type: "user.FindOneUserByLoginIdRequest";
+  loginId?: string | undefined;
+}
+
+export interface FindOneUserByLoginIdResponse {
+  $type: "user.FindOneUserByLoginIdResponse";
+  user?: User | undefined;
+}
+
 export interface UpdateUserRequest {
   $type: "user.UpdateUserRequest";
   id?: string | undefined;
@@ -188,6 +198,44 @@ export const FindOneUserResponse = {
 
 messageTypeRegistry.set(FindOneUserResponse.$type, FindOneUserResponse);
 
+function createBaseFindOneUserByLoginIdRequest(): FindOneUserByLoginIdRequest {
+  return { $type: "user.FindOneUserByLoginIdRequest" };
+}
+
+export const FindOneUserByLoginIdRequest = {
+  $type: "user.FindOneUserByLoginIdRequest" as const,
+
+  create(base?: DeepPartial<FindOneUserByLoginIdRequest>): FindOneUserByLoginIdRequest {
+    return FindOneUserByLoginIdRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<FindOneUserByLoginIdRequest>): FindOneUserByLoginIdRequest {
+    const message = Object.create(createBaseFindOneUserByLoginIdRequest()) as FindOneUserByLoginIdRequest;
+    message.loginId = object.loginId ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(FindOneUserByLoginIdRequest.$type, FindOneUserByLoginIdRequest);
+
+function createBaseFindOneUserByLoginIdResponse(): FindOneUserByLoginIdResponse {
+  return { $type: "user.FindOneUserByLoginIdResponse" };
+}
+
+export const FindOneUserByLoginIdResponse = {
+  $type: "user.FindOneUserByLoginIdResponse" as const,
+
+  create(base?: DeepPartial<FindOneUserByLoginIdResponse>): FindOneUserByLoginIdResponse {
+    return FindOneUserByLoginIdResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<FindOneUserByLoginIdResponse>): FindOneUserByLoginIdResponse {
+    const message = Object.create(createBaseFindOneUserByLoginIdResponse()) as FindOneUserByLoginIdResponse;
+    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(FindOneUserByLoginIdResponse.$type, FindOneUserByLoginIdResponse);
+
 function createBaseUpdateUserRequest(): UpdateUserRequest {
   return { $type: "user.UpdateUserRequest" };
 }
@@ -272,6 +320,8 @@ export interface RpcUserServiceClient {
 
   findOneUser(request: FindOneUserRequest, ...rest: any): Observable<FindOneUserResponse>;
 
+  findOneUserByLoginId(request: FindOneUserByLoginIdRequest, ...rest: any): Observable<FindOneUserByLoginIdResponse>;
+
   updateUser(request: UpdateUserRequest, ...rest: any): Observable<UpdateUserResponse>;
 
   deleteUser(request: DeleteUserRequest, ...rest: any): Observable<DeleteUserResponse>;
@@ -288,6 +338,11 @@ export interface RpcUserServiceController {
     ...rest: any
   ): Promise<FindOneUserResponse> | Observable<FindOneUserResponse> | FindOneUserResponse;
 
+  findOneUserByLoginId(
+    request: FindOneUserByLoginIdRequest,
+    ...rest: any
+  ): Promise<FindOneUserByLoginIdResponse> | Observable<FindOneUserByLoginIdResponse> | FindOneUserByLoginIdResponse;
+
   updateUser(
     request: UpdateUserRequest,
     ...rest: any
@@ -301,7 +356,7 @@ export interface RpcUserServiceController {
 
 export function RpcUserServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["createUser", "findOneUser", "updateUser", "deleteUser"];
+    const grpcMethods: string[] = ["createUser", "findOneUser", "findOneUserByLoginId", "updateUser", "deleteUser"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("RpcUserService", method)(constructor.prototype[method], method, descriptor);

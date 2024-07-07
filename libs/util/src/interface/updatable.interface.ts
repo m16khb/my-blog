@@ -1,4 +1,4 @@
-export interface UpdatableEntity {
+export interface Updatable {
   updatedAt?: Date;
   updatedBy?: string;
 }

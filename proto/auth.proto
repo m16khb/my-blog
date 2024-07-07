@@ -2,9 +2,17 @@ syntax = 'proto3';
 
 package auth;
 
+import "user.proto";
+
+message Token {
+    string accessToken = 1;
+    string refreshToken = 2;
+}
+
 service RpcAuthService {
   rpc logIn(LoginRequest) returns (LoginResponse);
   rpc logOut(LogoutRequest) returns (LogoutResponse);
+  rpc generateToken(GenerateTokenRequest) returns (GenerateTokenResponse);
   rpc validateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
 }
 
@@ -14,19 +22,30 @@ message LoginRequest {
 }
 
 message LoginResponse {
-  string token = 1;
+  Token token = 1;
 }
 
 message LogoutRequest {
-  string token = 1;
+  oneof logoutToken {
+    string accessToken = 1;
+    string refreshToken = 2;
+  }
 }
 
 message LogoutResponse {
   bool success = 1;
 }
 
+message GenerateTokenRequest {
+  user.User user = 1;
+}
+
+message GenerateTokenResponse {
+  Token token = 1;
+}
+
 message ValidateTokenRequest {
-  string token = 1;
+  string accessToken = 1;
 }
 
 message ValidateTokenResponse {

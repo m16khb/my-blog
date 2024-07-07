@@ -42,6 +42,24 @@
       ],
       "@app/util/*": [
         "libs/util/src/*"
+      ],
+      "@app/guard": [
+        "libs/guard/src"
+      ],
+      "@app/guard/*": [
+        "libs/guard/src/*"
+      ],
+      "@app/middleware": [
+        "libs/middleware/src"
+      ],
+      "@app/middleware/*": [
+        "libs/middleware/src/*"
+      ],
+      "@app/interceptor": [
+        "libs/interceptor/src"
+      ],
+      "@app/interceptor/*": [
+        "libs/interceptor/src/*"
       ]
     }
   }

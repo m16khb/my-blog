@@ -1,0 +1,23 @@
+@host = localhost
+@port = 8083
+
+### User Source Connector 생성
+POST http://{{host}}:{{port}}/connectors
+Content-Type: application/json
+
+< ./user-source-connector.json
+
+###
+GET http://localhost:8083/connectors/user-source-connector
+
+###
+GET http://localhost:8083/connectors/user-source-connector/status
+
+###
+DELETE http://localhost:8083/connectors/user-source-connector
+
+###
+PUT http://localhost:8083/connectors/user-source-connector/config
+Content-Type: application/json
+
+< user-source-connector.json

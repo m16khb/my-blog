@@ -1,10 +1,12 @@
-import { Controller, UseFilters } from '@nestjs/common';
+import { Controller, UseFilters, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   CreateUserRequest,
   CreateUserResponse,
   DeleteUserRequest,
   DeleteUserResponse,
+  FindOneUserByLoginIdRequest,
+  FindOneUserByLoginIdResponse,
   FindOneUserRequest,
   FindOneUserResponse,
   RpcUserServiceController,
@@ -12,10 +14,8 @@ import {
   UpdateUserRequest,
   UpdateUserResponse,
 } from '@proto/user.pb';
-import { RpcExceptionFilter } from '@app/filter';
 
 @Controller()
-@UseFilters(RpcExceptionFilter)
 @RpcUserServiceControllerMethods()
 export class UserController implements RpcUserServiceController {
   constructor(private readonly userService: UserService) {}
@@ -29,7 +29,14 @@ export class UserController implements RpcUserServiceController {
   async findOneUser(
     findOneUserRequest: FindOneUserRequest,
   ): Promise<FindOneUserResponse> {
+    console.log(findOneUserRequest);
     return this.userService.findOneUser(findOneUserRequest);
+  }
+
+  async findOneUserByLoginId(
+    findOneUserByLoginIdRequest: FindOneUserByLoginIdRequest,
+  ): Promise<FindOneUserByLoginIdResponse> {
+    return this.userService.findOneUserByLoginId(findOneUserByLoginIdRequest);
   }
 
   async updateUser(

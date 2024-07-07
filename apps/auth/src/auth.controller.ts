@@ -1,6 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseFilters } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  GenerateTokenRequest,
+  GenerateTokenResponse,
   LoginRequest,
   LoginResponse,
   LogoutRequest,
@@ -10,8 +12,10 @@ import {
   ValidateTokenRequest,
   ValidateTokenResponse,
 } from '@proto/auth.pb';
+import { RpcExceptionFilter } from '@app/filter';
 
 @Controller()
+@UseFilters(RpcExceptionFilter)
 @RpcAuthServiceControllerMethods()
 export class AuthController implements RpcAuthServiceController {
   constructor(private readonly authService: AuthService) {}
@@ -22,6 +26,12 @@ export class AuthController implements RpcAuthServiceController {
 
   async logOut(logoutRequest: LogoutRequest): Promise<LogoutResponse> {
     return this.authService.logOut(logoutRequest);
+  }
+
+  async generateToken(
+    generateTokenRequest: GenerateTokenRequest,
+  ): Promise<GenerateTokenResponse> {
+    return this.authService.generateToken(generateTokenRequest);
   }
 
   async validateToken(

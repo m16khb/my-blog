@@ -1,0 +1,23 @@
+@host = localhost
+@port = 8083
+
+### User Sink to Auth Connector 생성
+POST http://{{host}}:{{port}}/connectors
+Content-Type: application/json
+
+< ./user-sink-to-auth-connector.json
+
+###
+GET http://localhost:8083/connectors/user-sink-to-auth-connector
+
+###
+GET http://{{host}}:{{port}}/connectors/user-sink-to-auth-connector/status
+
+###
+DELETE http://localhost:8083/connectors/user-sink-to-auth-connector
+
+###
+PUT http://localhost:8083/connectors/user-sink-to-auth-connector/config
+Content-Type: application/json
+
+< user-sink-to-auth-connector.json

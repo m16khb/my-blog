@@ -1,0 +1,21 @@
+{
+  "name": "user-source-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "connection.url": "jdbc:postgresql://multi-db:5432/user",
+    "connection.user": "postgres",
+    "connection.password": "postgres",
+    "table.whitelist": "users",
+    "mode": "timestamp+incrementing",
+    "timestamp.column.name": "updatedAt",
+    "incrementing.column.name": "id",
+    "topic.prefix": "sync-",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "true",
+    "value.converter": "io.confluent.connect.avro.AvroConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "transforms": "createKey",
+    "transforms.createKey.type": "org.apache.kafka.connect.transforms.ValueToKey",
+    "transforms.createKey.fields": "id"
+  }
+}

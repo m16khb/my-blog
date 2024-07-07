@@ -7,6 +7,9 @@ import { status } from '@grpc/grpc-js';
 export class RpcExceptionFilter implements ExceptionFilter {
   catch(exception: unknown): Observable<never> {
     if (exception instanceof RpcException) {
+      console.error(
+        'Exception' + ' - ' + JSON.stringify(exception.getError(), null, 2),
+      );
       return throwError(() => exception.getError());
     } else {
       return throwError(

@@ -21,6 +21,7 @@ message User {
 service RpcUserService {
   rpc createUser (CreateUserRequest) returns (CreateUserResponse) {}
   rpc findOneUser(FindOneUserRequest) returns (FindOneUserResponse) {}
+  rpc findOneUserByLoginId(FindOneUserByLoginIdRequest) returns (FindOneUserByLoginIdResponse) {}
   rpc updateUser(UpdateUserRequest) returns (UpdateUserResponse) {}
   rpc deleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
 }
@@ -40,6 +41,14 @@ message FindOneUserRequest {
 }
 
 message FindOneUserResponse {
+  user.User user = 1;
+}
+
+message FindOneUserByLoginIdRequest {
+  string loginId = 1;
+}
+
+message FindOneUserByLoginIdResponse {
   user.User user = 1;
 }
 

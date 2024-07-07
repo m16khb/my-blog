@@ -1,4 +1,4 @@
-export interface DeletableEntity {
+export interface Deletable {
   deletedAt?: Date;
   deletedBy?: string;
 }

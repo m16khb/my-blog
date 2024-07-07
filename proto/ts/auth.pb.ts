@@ -8,8 +8,15 @@
 import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
 import { Observable } from "rxjs";
 import { messageTypeRegistry } from "./typeRegistry";
+import { User } from "./user.pb";
 
 export const protobufPackage = "auth";
+
+export interface Token {
+  $type: "auth.Token";
+  accessToken?: string | undefined;
+  refreshToken?: string | undefined;
+}
 
 export interface LoginRequest {
   $type: "auth.LoginRequest";
@@ -19,12 +26,13 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   $type: "auth.LoginResponse";
-  token?: string | undefined;
+  token?: Token | undefined;
 }
 
 export interface LogoutRequest {
   $type: "auth.LogoutRequest";
-  token?: string | undefined;
+  accessToken?: string | undefined;
+  refreshToken?: string | undefined;
 }
 
 export interface LogoutResponse {
@@ -32,9 +40,19 @@ export interface LogoutResponse {
   success?: boolean | undefined;
 }
 
+export interface GenerateTokenRequest {
+  $type: "auth.GenerateTokenRequest";
+  user?: User | undefined;
+}
+
+export interface GenerateTokenResponse {
+  $type: "auth.GenerateTokenResponse";
+  token?: Token | undefined;
+}
+
 export interface ValidateTokenRequest {
   $type: "auth.ValidateTokenRequest";
-  token?: string | undefined;
+  accessToken?: string | undefined;
 }
 
 export interface ValidateTokenResponse {
@@ -43,6 +61,26 @@ export interface ValidateTokenResponse {
 }
 
 export const AUTH_PACKAGE_NAME = "auth";
+
+function createBaseToken(): Token {
+  return { $type: "auth.Token" };
+}
+
+export const Token = {
+  $type: "auth.Token" as const,
+
+  create(base?: DeepPartial<Token>): Token {
+    return Token.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<Token>): Token {
+    const message = Object.create(createBaseToken()) as Token;
+    message.accessToken = object.accessToken ?? undefined;
+    message.refreshToken = object.refreshToken ?? undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(Token.$type, Token);
 
 function createBaseLoginRequest(): LoginRequest {
   return { $type: "auth.LoginRequest" };
@@ -76,7 +114,7 @@ export const LoginResponse = {
   },
   fromPartial(object: DeepPartial<LoginResponse>): LoginResponse {
     const message = Object.create(createBaseLoginResponse()) as LoginResponse;
-    message.token = object.token ?? undefined;
+    message.token = (object.token !== undefined && object.token !== null) ? Token.fromPartial(object.token) : undefined;
     return message;
   },
 };
@@ -95,7 +133,8 @@ export const LogoutRequest = {
   },
   fromPartial(object: DeepPartial<LogoutRequest>): LogoutRequest {
     const message = Object.create(createBaseLogoutRequest()) as LogoutRequest;
-    message.token = object.token ?? undefined;
+    message.accessToken = object.accessToken ?? undefined;
+    message.refreshToken = object.refreshToken ?? undefined;
     return message;
   },
 };
@@ -121,6 +160,44 @@ export const LogoutResponse = {
 
 messageTypeRegistry.set(LogoutResponse.$type, LogoutResponse);
 
+function createBaseGenerateTokenRequest(): GenerateTokenRequest {
+  return { $type: "auth.GenerateTokenRequest" };
+}
+
+export const GenerateTokenRequest = {
+  $type: "auth.GenerateTokenRequest" as const,
+
+  create(base?: DeepPartial<GenerateTokenRequest>): GenerateTokenRequest {
+    return GenerateTokenRequest.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<GenerateTokenRequest>): GenerateTokenRequest {
+    const message = Object.create(createBaseGenerateTokenRequest()) as GenerateTokenRequest;
+    message.user = (object.user !== undefined && object.user !== null) ? User.fromPartial(object.user) : undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(GenerateTokenRequest.$type, GenerateTokenRequest);
+
+function createBaseGenerateTokenResponse(): GenerateTokenResponse {
+  return { $type: "auth.GenerateTokenResponse" };
+}
+
+export const GenerateTokenResponse = {
+  $type: "auth.GenerateTokenResponse" as const,
+
+  create(base?: DeepPartial<GenerateTokenResponse>): GenerateTokenResponse {
+    return GenerateTokenResponse.fromPartial(base ?? {});
+  },
+  fromPartial(object: DeepPartial<GenerateTokenResponse>): GenerateTokenResponse {
+    const message = Object.create(createBaseGenerateTokenResponse()) as GenerateTokenResponse;
+    message.token = (object.token !== undefined && object.token !== null) ? Token.fromPartial(object.token) : undefined;
+    return message;
+  },
+};
+
+messageTypeRegistry.set(GenerateTokenResponse.$type, GenerateTokenResponse);
+
 function createBaseValidateTokenRequest(): ValidateTokenRequest {
   return { $type: "auth.ValidateTokenRequest" };
 }
@@ -133,7 +210,7 @@ export const ValidateTokenRequest = {
   },
   fromPartial(object: DeepPartial<ValidateTokenRequest>): ValidateTokenRequest {
     const message = Object.create(createBaseValidateTokenRequest()) as ValidateTokenRequest;
-    message.token = object.token ?? undefined;
+    message.accessToken = object.accessToken ?? undefined;
     return message;
   },
 };
@@ -164,6 +241,8 @@ export interface RpcAuthServiceClient {
 
   logOut(request: LogoutRequest, ...rest: any): Observable<LogoutResponse>;
 
+  generateToken(request: GenerateTokenRequest, ...rest: any): Observable<GenerateTokenResponse>;
+
   validateToken(request: ValidateTokenRequest, ...rest: any): Observable<ValidateTokenResponse>;
 }
 
@@ -171,6 +250,11 @@ export interface RpcAuthServiceController {
   logIn(request: LoginRequest, ...rest: any): Promise<LoginResponse> | Observable<LoginResponse> | LoginResponse;
 
   logOut(request: LogoutRequest, ...rest: any): Promise<LogoutResponse> | Observable<LogoutResponse> | LogoutResponse;
+
+  generateToken(
+    request: GenerateTokenRequest,
+    ...rest: any
+  ): Promise<GenerateTokenResponse> | Observable<GenerateTokenResponse> | GenerateTokenResponse;
 
   validateToken(
     request: ValidateTokenRequest,
@@ -180,7 +264,7 @@ export interface RpcAuthServiceController {
 
 export function RpcAuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["logIn", "logOut", "validateToken"];
+    const grpcMethods: string[] = ["logIn", "logOut", "generateToken", "validateToken"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("RpcAuthService", method)(constructor.prototype[method], method, descriptor);

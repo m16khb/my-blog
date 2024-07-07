@@ -1,4 +1,4 @@
-export interface CreatableEntity {
+export interface Creatable {
   createdAt?: Date;
   createdBy?: string;
 }

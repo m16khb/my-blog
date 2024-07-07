@@ -4,6 +4,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { USER_PACKAGE_NAME } from '@proto/user.pb';
 import { join } from 'path';
 import * as process from 'node:process';
+import { RpcExceptionFilter } from '@app/filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(UserModule);
@@ -22,6 +23,8 @@ async function bootstrap() {
       package: [USER_PACKAGE_NAME],
     },
   });
+
+  app.useGlobalFilters(new RpcExceptionFilter());
 
   await app.startAllMicroservices();
   await app.listen(httpPort);

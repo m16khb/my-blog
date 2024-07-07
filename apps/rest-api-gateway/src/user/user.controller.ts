@@ -10,6 +10,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
 import {
@@ -23,8 +24,11 @@ import {
 import { firstValueFrom } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { createProxy } from '@app/util';
+import { ApiTags } from '@nestjs/swagger';
 
+// @UseGuards(JwtGuard)
 @Controller('users')
+@ApiTags('users')
 export class UserController implements OnModuleInit {
   private grpcStubUserService: RpcUserServiceClient;
 
@@ -51,7 +55,9 @@ export class UserController implements OnModuleInit {
 
   @Get(':userId')
   async findOneUser(@Param('userId') userId: string) {
-    const findOneUserRequest = FindOneUserRequest.fromPartial({ id: userId });
+    const findOneUserRequest = FindOneUserRequest.fromPartial({
+      id: userId,
+    });
 
     const { user } = await firstValueFrom(
       this.grpcStubUserService.findOneUser(findOneUserRequest),

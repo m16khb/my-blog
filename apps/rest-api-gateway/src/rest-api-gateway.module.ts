@@ -5,6 +5,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { USER_PACKAGE_NAME } from '@proto/user.pb';
 import { AUTH_PACKAGE_NAME } from '@proto/auth.pb';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,12 @@ import { AUTH_PACKAGE_NAME } from '@proto/auth.pb';
                 url: 'localhost:30001',
                 package: [AUTH_PACKAGE_NAME],
                 protoPath: [join(__dirname, '../../../', 'proto/auth.proto')],
+                loader: {
+                  keepCase: true,
+                  longs: String,
+                  enums: String,
+                  oneofs: true,
+                },
               },
             };
           },
@@ -35,6 +42,12 @@ import { AUTH_PACKAGE_NAME } from '@proto/auth.pb';
                 url: 'localhost:30002',
                 package: [USER_PACKAGE_NAME],
                 protoPath: [join(__dirname, '../../../', 'proto/user.proto')],
+                loader: {
+                  keepCase: true,
+                  longs: String,
+                  enums: String,
+                  oneofs: true,
+                },
               },
             };
           },
@@ -43,6 +56,7 @@ import { AUTH_PACKAGE_NAME } from '@proto/auth.pb';
       isGlobal: true,
     }),
     UserModule,
+    AuthModule,
   ],
   controllers: [],
 })

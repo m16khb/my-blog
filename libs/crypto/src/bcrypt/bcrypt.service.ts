@@ -18,5 +18,7 @@ export class BcryptService implements OnModuleInit {
     return await bcrypt.hash(plainText, this.saltRounds);
   }
 
-  async compare() {}
+  async compare(existText: string, compareText: string) {
+    return await bcrypt.compare(compareText, existText);
+  }
 }

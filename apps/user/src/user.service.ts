@@ -4,6 +4,8 @@ import {
   CreateUserResponse,
   DeleteUserRequest,
   DeleteUserResponse,
+  FindOneUserByLoginIdRequest,
+  FindOneUserByLoginIdResponse,
   FindOneUserRequest,
   FindOneUserResponse,
   UpdateUserRequest,
@@ -73,6 +75,26 @@ export class UserService {
     delete user.password;
 
     return FindOneUserResponse.fromPartial({ user });
+  }
+
+  async findOneUserByLoginId(
+    findOneUserByLoginIdRequest: FindOneUserByLoginIdRequest,
+  ): Promise<FindOneUserByLoginIdResponse> {
+    console.log(findOneUserByLoginIdRequest, 'findOneUserByLoginIdRequest');
+
+    const { loginId } = findOneUserByLoginIdRequest;
+
+    const user = await this.userRepository.findOne({ where: { loginId } });
+
+    if (!user) {
+      console.error('User not found');
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    return FindOneUserByLoginIdResponse.fromPartial({ user });
   }
 
   async updateUser(
