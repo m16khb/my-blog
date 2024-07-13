@@ -12,7 +12,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { AuthUser, createProxy } from '@app/util';
+import { AuthUser, createProxy, Public } from '@app/util';
 import {
   LoginRequest,
   LogoutRequest,
@@ -42,6 +42,7 @@ export class AuthController implements OnModuleInit {
     );
   }
 
+  @Public()
   @Post('login')
   async logIn(@Body(new ValidationPipe()) loginRequestDto: LoginRequestDto) {
     const loginRequest = LoginRequest.fromPartial(loginRequestDto);
@@ -50,7 +51,6 @@ export class AuthController implements OnModuleInit {
   }
 
   @Delete('logout')
-  @UseGuards(JwtGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async logOut(@AuthUser() user: User) {
     return await firstValueFrom(

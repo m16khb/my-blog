@@ -3,6 +3,7 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { User } from '@proto/user.pb';
+import { SetMetadata } from '@nestjs/common';
 
 export function createProxy<T extends object>(client: T): T {
   return new Proxy(client, {
@@ -38,3 +39,6 @@ export const AuthUser = createParamDecorator(
     return request.user;
   },
 );
+
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
