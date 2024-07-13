@@ -7,6 +7,7 @@ import { USER_PACKAGE_NAME } from '@proto/user.pb';
 import { AUTH_PACKAGE_NAME } from '@proto/auth.pb';
 import { AuthModule } from './auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtGuard } from '@app/guard';
 
 @Module({
   imports: [
@@ -59,6 +60,6 @@ import { JwtModule } from '@nestjs/jwt';
     UserModule,
     AuthModule,
   ],
-  controllers: [],
+  providers: [{ provide: 'APP_GUARD', useClass: JwtGuard }],
 })
 export class RestApiGatewayModule {}
