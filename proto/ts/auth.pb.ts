@@ -31,8 +31,7 @@ export interface LoginResponse {
 
 export interface LogoutRequest {
   $type: "auth.LogoutRequest";
-  accessToken?: string | undefined;
-  refreshToken?: string | undefined;
+  userId?: string | undefined;
 }
 
 export interface LogoutResponse {
@@ -133,8 +132,7 @@ export const LogoutRequest = {
   },
   fromPartial(object: DeepPartial<LogoutRequest>): LogoutRequest {
     const message = Object.create(createBaseLogoutRequest()) as LogoutRequest;
-    message.accessToken = object.accessToken ?? undefined;
-    message.refreshToken = object.refreshToken ?? undefined;
+    message.userId = object.userId ?? undefined;
     return message;
   },
 };

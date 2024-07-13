@@ -13,9 +13,10 @@ import { ClientGrpc, RpcException } from '@nestjs/microservices';
 import * as console from 'node:console';
 import {
   FindOneUserByLoginIdRequest,
+  FindOneUserRequest,
+  FindOneUserResponse,
   RPC_USER_SERVICE_NAME,
   RpcUserServiceClient,
-  User,
 } from '@proto/user.pb';
 import { createProxy } from '@app/util';
 import { firstValueFrom } from 'rxjs';
@@ -25,6 +26,9 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenEntity } from './entity/token.entity';
 import { Repository } from 'typeorm';
+import * as dayjs from 'dayjs';
+import * as utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 @Injectable()
 export class AuthService implements OnModuleInit {
@@ -79,28 +83,26 @@ export class AuthService implements OnModuleInit {
       GenerateTokenRequest.fromPartial({ user: existUser }),
     );
 
-    const _creatableToken: {
-      accessToken: string;
-      refreshToken: string;
-      expiredAt: Date;
-      updatedBy: string;
-      user?: Omit<User, '$type'> | undefined;
-    } = {
-      ...existToken,
-      accessToken: token.accessToken,
-      refreshToken: token.refreshToken,
-      updatedBy: existUser.id,
-      expiredAt: new Date(),
-    };
-
-    if (existToken) {
-      _creatableToken.user = existUser;
-    }
+    const _creatableToken = existToken
+      ? this.tokenRepository.merge(existToken, {
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          updatedBy: existUser.id,
+          expiredAt: dayjs().utc().add(1, 'hour'),
+        })
+      : this.tokenRepository.create({
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          updatedBy: existUser.id,
+          createdBy: existUser.id,
+          expiredAt: dayjs().utc().add(1, 'hour'),
+          user: existUser,
+        });
 
     const creatableToken = this.tokenRepository.create(_creatableToken);
     const createdToken = await this.tokenRepository.save(creatableToken);
 
-    return LoginResponse.fromPartial({
+    return LoginResponse.create({
       token: {
         accessToken: createdToken.accessToken,
         refreshToken: createdToken.refreshToken,
@@ -110,7 +112,43 @@ export class AuthService implements OnModuleInit {
 
   async logOut(logoutRequest: LogoutRequest): Promise<LogoutResponse> {
     console.log(logoutRequest, 'logoutRequest');
-    return undefined;
+
+    const { userId } = logoutRequest;
+
+    const { user: existUser } = await handleRpcException<FindOneUserResponse>(
+      firstValueFrom(
+        this.grpcStubUserService.findOneUser(
+          FindOneUserRequest.create({ id: userId }),
+        ),
+      ),
+      {
+        notFoundValue: FindOneUserResponse.create({ user: null }),
+      },
+    );
+
+    if (!existUser) {
+      throw new RpcException({
+        code: status.NOT_FOUND,
+        message: 'User not found',
+      });
+    }
+
+    const { token: existToken } = await handleRpcException<{
+      token: TokenEntity;
+    }>(this.findOneTokenByUserId({ userId: existUser.id }), {
+      notFoundValue: { token: null },
+    });
+
+    if (!existToken) {
+      throw new RpcException({
+        code: status.INVALID_ARGUMENT,
+        message: 'Already logged out',
+      });
+    }
+
+    await this.tokenRepository.delete({ user: { id: userId } });
+
+    return LogoutResponse.create({ success: true });
   }
 
   async generateToken(

@@ -1,6 +1,8 @@
 import { instanceToPlain } from 'class-transformer';
 import { catchError, Observable, throwError } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { User } from '@proto/user.pb';
 
 export function createProxy<T extends object>(client: T): T {
   return new Proxy(client, {
@@ -27,3 +29,12 @@ export function createProxy<T extends object>(client: T): T {
 export function serialize(object: any) {
   return JSON.parse(JSON.stringify(instanceToPlain(object)));
 }
+
+export const AuthUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext): User => {
+    const rpcContext = ctx.switchToRpc();
+    const request = rpcContext.getData();
+
+    return request.user;
+  },
+);

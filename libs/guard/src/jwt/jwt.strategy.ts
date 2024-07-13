@@ -15,6 +15,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // request.user에 role 추가
   async validate(payload: any) {
-    return { role: payload.role };
+    return payload.user;
   }
 }
