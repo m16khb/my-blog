@@ -1,27 +1,29 @@
 version: '3'
 services:
+  # PostgreSQL 데이터베이스 서버
   multi-db:
     image: postgres:latest
     container_name: multi-db
     restart: always
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5432}:5432"  # 호스트의 DB_PORT(기본값 5432)를 컨테이너의 5432 포트에 매핑
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME_AUTH},${DB_NAME_USER},${DB_NAME_FILE}
+      POSTGRES_MULTIPLE_DATABASES: ${DB_NAME_AUTH},${DB_NAME_USER},${DB_NAME_FILE}  # 여러 데이터베이스 생성
       TZ: UTC
     command:
       - "postgres"
       - "-c"
-      - "wal_level=logical"
+      - "wal_level=logical"  # 논리적 복제 활성화
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
-      - ./init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh
-      - ./logs/db:/var/log
+      - ./postgres-data:/var/lib/postgresql/data  # 데이터 영속성
+      - ./init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh  # 초기화 스크립트
+      - ./logs/db:/var/log  # 로그 저장
     networks:
       - my-blog-network
 
+  # Apache Zookeeper - Kafka의 분산 코디네이션 서비스
   zookeeper:
     image: confluentinc/cp-zookeeper:7.6.1
     environment:
@@ -30,6 +32,7 @@ services:
     networks:
       - my-blog-network
 
+  # Apache Kafka - 분산 스트리밍 플랫폼
   broker:
     image: confluentinc/cp-kafka:7.6.1
     depends_on:
@@ -44,6 +47,7 @@ services:
     networks:
       - my-blog-network
 
+  # Schema Registry - Kafka 메시지의 스키마 관리
   schema-registry:
     image: confluentinc/cp-schema-registry:7.6.1
     depends_on:
@@ -56,6 +60,7 @@ services:
     networks:
       - my-blog-network
 
+  # Kafka Connect - 데이터 통합 플랫폼
   connect:
     image: confluentinc/cp-kafka-connect:7.6.1
     depends_on:
@@ -89,6 +94,7 @@ services:
     networks:
       - my-blog-network
 
+  # Kafka UI - Kafka 클러스터 관리 및 모니터링 UI
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     depends_on:
@@ -107,6 +113,7 @@ services:
     networks:
       - my-blog-network
 
+  # LocalStack - AWS 서비스 로컬 에뮬레이터
   localstack:
     image: localstack/localstack:latest
     container_name: localstack
@@ -114,7 +121,7 @@ services:
       - "4566:4566"
       - "4571:4571"
     environment:
-      - SERVICES=s3
+      - SERVICES=s3  # S3 서비스만 활성화
       - DEBUG=0
       - DEFAULT_REGION=us-east-1
       - AWS_DEFAULT_REGION=us-east-1
@@ -122,6 +129,7 @@ services:
     networks:
       - my-blog-network
 
+  # OpenTelemetry Collector - 텔레메트리 데이터 수집 및 처리
   otel-collector:
     image: otel/opentelemetry-collector:latest
     command: ["--config=/etc/otel-collector-config.yaml"]
@@ -133,6 +141,7 @@ services:
     networks:
       - my-blog-network
 
+  # Jaeger - 분산 트레이싱 시스템
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:
@@ -143,6 +152,7 @@ services:
     networks:
       - my-blog-network
 
+# 모든 서비스를 연결하는 Docker 네트워크
 networks:
   my-blog-network:
     driver: bridge
